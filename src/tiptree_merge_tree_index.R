@@ -9,7 +9,14 @@ library(sp)
 sdist <- function(east_i, north_i, east_j, north_j){
   sqrt((east_i - east_j)**2 + (north_i - north_j)**2)
 }
-  
+
+
+# Degrees to radians conversion ------------------------------------------------
+deg2rad <- function(degree){
+  degree * pi / 180.0
+}
+
+
 # Function HgCI ----------------------------------------------------------------
 hgci <- function(bhd_i, bhd_j, pos_ij){
   index <- lapply(seq(length(bhd_j)), function(x){
@@ -39,6 +46,15 @@ schtzi <- function(height_i, carea_i,height_j, carea_j, pos_ij){
     return(si)
   })
   return(sum(unlist(index)))
+}
+
+
+# Function radiance intensity --------------------------------------------------
+radi <- function(lat, slope, exposition){
+  
+  int <- cos(deg2rad(lat - 20.4)) * cos(deg2rad(slope)) + 
+    sin(deg2rad(lat - 20.4)) * sin(deg2rad(exposition)) - 0.5
+  return(int)
 }
 
 
@@ -119,6 +135,13 @@ index_schtz <- lapply(seq(length(tree_ngbh)), function(x){
   return(index)
 })
 merged_data@data$SCHTZI <- unlist(index_schtz)
+
+
+# Compute radiance intensity  --------------------------------------------------
+rad_intensity <- radi(lat = merged_data@data$LATITUDE, 
+                      slope = merged_data@data$Neigung,
+                      exposition = merged_data@data$Exposition)
+merged_data@data$RADI <- unlist(rad_intensity)
 
 
 # Write data to shape file  ----------------------------------------------------
